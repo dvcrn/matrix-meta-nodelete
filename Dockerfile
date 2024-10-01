@@ -4,7 +4,7 @@ RUN apk add --no-cache git ca-certificates build-base su-exec olm-dev
 
 COPY . /build
 WORKDIR /build
-RUN go build -o /usr/bin/mautrix-meta
+RUN go build -o /usr/bin/mautrix-meta ./cmd/mautrix-meta
 
 FROM alpine:3.21
 
