@@ -539,6 +539,60 @@ func (evt *WAMessageEvent) ConvertEdit(ctx context.Context, portal *bridgev2.Por
 	}
 }
 
+type DeleteNoticeEvent struct {
+	portalKey         networkid.PortalKey
+	uncertainReceiver bool
+	deletedMessageID  string
+	timestamp         time.Time
+	m                 *MetaClient
+}
+
+var (
+	_ bridgev2.RemoteMessage                          = (*DeleteNoticeEvent)(nil)
+	_ bridgev2.RemoteEventWithUncertainPortalReceiver = (*DeleteNoticeEvent)(nil)
+	_ bridgev2.RemoteEventWithTimestamp               = (*DeleteNoticeEvent)(nil)
+)
+
+func (evt *DeleteNoticeEvent) GetType() bridgev2.RemoteEventType {
+	return bridgev2.RemoteEventMessage
+}
+
+func (evt *DeleteNoticeEvent) GetPortalKey() networkid.PortalKey {
+	return evt.portalKey
+}
+
+func (evt *DeleteNoticeEvent) PortalReceiverIsUncertain() bool {
+	return evt.uncertainReceiver
+}
+
+func (evt *DeleteNoticeEvent) AddLogContext(c zerolog.Context) zerolog.Context {
+	return c.Str("deleted_message_id", evt.deletedMessageID)
+}
+
+func (evt *DeleteNoticeEvent) GetSender() bridgev2.EventSender {
+	return bridgev2.EventSender{}
+}
+
+func (evt *DeleteNoticeEvent) GetID() networkid.MessageID {
+	return metaid.MakeFBMessageID(fmt.Sprintf("delete_notice_%s_%d", evt.deletedMessageID, evt.timestamp.UnixMilli()))
+}
+
+func (evt *DeleteNoticeEvent) GetTimestamp() time.Time {
+	return evt.timestamp
+}
+
+func (evt *DeleteNoticeEvent) ConvertMessage(ctx context.Context, portal *bridgev2.Portal, intent bridgev2.MatrixAPI) (*bridgev2.ConvertedMessage, error) {
+	return &bridgev2.ConvertedMessage{
+		Parts: []*bridgev2.ConvertedMessagePart{{
+			Type: event.EventMessage,
+			Content: &event.MessageEventContent{
+				MsgType: event.MsgNotice,
+				Body:    fmt.Sprintf("🚮 Message deletion attempted (ID: %s)", evt.deletedMessageID),
+			},
+		}},
+	}, nil
+}
+
 type FBChatResync struct {
 	Raw       *table.LSDeleteThenInsertThread
 	PortalKey networkid.PortalKey

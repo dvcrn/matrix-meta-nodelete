@@ -3,7 +3,6 @@ package connector
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
 	"time"
 
@@ -472,43 +471,13 @@ func wrapMessageDelete(portal networkid.PortalKey, uncertain bool, messageID str
 }
 
 func (m *MetaClient) handleDeleteMessage(tk handlerParams, msg *table.LSDeleteMessage) bridgev2.RemoteEvent {
-	fmt.Println("attempted to delete a message but intercepted it")
-	// 	return wrapMessageDelete(tk.Portal, tk.UncertainReceiver, msg.MessageId)
-	// instead of actually deleting, we're constructing a new message in reply to the deleted message to signify that it has been attempted to be deleted
-	return &FBMessageEvent{
-		WrappedMessage: &table.WrappedMessage{
-			LSInsertMessage: &table.LSInsertMessage{
-				Text: "this message got deleted",
-				//SenderId:                        0,
-				//UnsentTimestampMs:               0,
-				//MentionOffsets:                  "",
-				//MentionLengths:                  "",
-				//MentionIds:                      "",
-				//MentionTypes:                    "",
-				ReplySourceId: msg.MessageId,
-				//ReplySourceType:                 0,
-				//ReplySourceTypeV2:               0,
-				//ReplyStatus:                     0,
-				//ReplySnippet:                    "",
-				//ReplyMessageText:                "",
-				//ReplyToUserId:                   0,
-				//ReplyMediaExpirationTimestampMs: 0,
-				//ReplyMediaUrl:                   "",
-				//ReplyMediaUnknownTimestampS:     0,
-				//ReplyMediaPreviewWidth:          0,
-				//ReplyMediaPreviewHeight:         0,
-				//ReplyMediaUrlMimeType:           "",
-				//ReplyMediaUrlFallback:           "",
-				//ReplyCtaId:                      0,
-				//ReplyCtaTitle:                   "",
-				//ReplyAttachmentType:             0,
-				//ReplyAttachmentId:               0,
-				//ReplyAttachmentExtra:            "",
-			},
-			IsUpsert: false,
-		},
+	zerolog.Ctx(tk.ctx).Info().Str("deleted_message_id", msg.MessageId).Msg("Intercepted message delete attempt, sending notice instead.")
+
+	return &DeleteNoticeEvent{
 		portalKey:         tk.Portal,
 		uncertainReceiver: tk.UncertainReceiver,
+		deletedMessageID:  msg.MessageId,
+		timestamp:         time.Now(),
 		m:                 m,
 	}
 }
