@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 if [[ -z "$LIBRARY_PATH" && -d /opt/homebrew ]]; then
 	echo "Using /opt/homebrew for LIBRARY_PATH and CPATH"
 	export LIBRARY_PATH=/opt/homebrew/lib
