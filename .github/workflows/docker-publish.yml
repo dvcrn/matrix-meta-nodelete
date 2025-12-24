@@ -45,11 +45,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/mautrix-meta
+            ghcr.io/${{ github.repository_owner }}/matrix-meta-nodelete
           tags: |
             type=ref,event=branch
             type=ref,event=tag
             type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
         uses: docker/build-push-action@v6
