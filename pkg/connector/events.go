@@ -583,10 +583,11 @@ func (evt *DeleteNoticeEvent) GetTimestamp() time.Time {
 
 func (evt *DeleteNoticeEvent) ConvertMessage(ctx context.Context, portal *bridgev2.Portal, intent bridgev2.MatrixAPI) (*bridgev2.ConvertedMessage, error) {
 	return &bridgev2.ConvertedMessage{
+		ReplyTo: &networkid.MessageOptionalPartID{MessageID: metaid.MakeFBMessageID(evt.deletedMessageID)},
 		Parts: []*bridgev2.ConvertedMessagePart{{
 			Type: event.EventMessage,
 			Content: &event.MessageEventContent{
-				MsgType: event.MsgNotice,
+				MsgType: event.MsgText,
 				Body:    fmt.Sprintf("🚮 Message deletion attempted (ID: %s)", evt.deletedMessageID),
 			},
 		}},
